@@ -13,22 +13,40 @@ $trenutni_uporabnik = $_SESSION['idu'];
 
 if (!empty($_POST)) {
     $nova_ocena = (int)$_POST['ocena'];
-    $novo_mnenje = mysqli_real_escape_string($link, $_POST['mnenje']);
+    $novo_mnenje = $_POST['mnenje'];
     $knjiga_id = (int)$_POST['knjiga_id'];
 
-    $sql_update = "UPDATE ocene SET ocena = $nova_ocena, mnenje = '$novo_mnenje' WHERE id = $ocena_id AND uporabnik_id = $trenutni_uporabnik;";
+    $sql_update = "UPDATE ocene SET ocena = ?, mnenje = ? WHERE id = ? AND uporabnik_id = ?;";
     
-    if (mysqli_query($link, $sql_update)) {
-        header("Location: ocene.php?id=" . $knjiga_id);
-        exit();
+    if ($stmt = mysqli_prepare($link, $sql_update)) {
+		
+        mysqli_stmt_bind_param($stmt, "isii", $nova_ocena, $novo_mnenje, $ocena_id, $trenutni_uporabnik);
+
+        if (mysqli_stmt_execute($stmt)) {
+            mysqli_stmt_close($stmt);
+            header("Location: ocene.php?id=" . $knjiga_id);
+            exit();
+        } else {
+            echo "Napaka pri posodabljanju: " . mysqli_stmt_error($stmt);
+        }
+        mysqli_stmt_close($stmt);
     } else {
-        echo "Napaka pri posodabljanju: " . mysqli_error($link);
+        echo "Napaka pri pripravi poizvedbe: " . mysqli_error($link);
     }
 }
 
-$sql_izbira = "SELECT * FROM ocene WHERE id = $ocena_id AND uporabnik_id = $trenutni_uporabnik;";
-$rezultat = mysqli_query($link, $sql_izbira);
-$ocena_podatki = mysqli_fetch_array($rezultat);
+$sql_izbira = "SELECT * FROM ocene WHERE id = ? AND uporabnik_id = ?;";
+$ocena_podatki = null;
+
+if ($stmt_select = mysqli_prepare($link, $sql_izbira)) {
+    mysqli_stmt_bind_param($stmt_select, "ii", $ocena_id, $trenutni_uporabnik);
+    mysqli_stmt_execute($stmt_select);
+    
+    $rezultat = mysqli_stmt_get_result($stmt_select);
+    $ocena_podatki = mysqli_fetch_array($rezultat);
+    
+    mysqli_stmt_close($stmt_select);
+}
 
 if (!$ocena_podatki) {
     die("Ocena ne obstaja ali pa nimate pravic za njeno urejanje.");
