@@ -48,7 +48,7 @@ if ($stmt_select = mysqli_prepare($link, $sql_izbira)) {
     mysqli_stmt_close($stmt_select);
 }
 
-if (!$ocena_podatki) {
+if ($ocena_podatki==null) {
     die("Ocena ne obstaja ali pa nimate pravic za njeno urejanje.");
 }
 ?>
