@@ -8,7 +8,7 @@ $uporabnik_id = (int)$_SESSION['idu'];
 $knjiga_id = (int)$_POST['knjiga_id'];
 $status = $_POST['status']; 
 
-$sql = "INSERT INTO UPORABNIK_KNJIGE (uporabnik_id, knjiga_id, status) 
+$sql = "INSERT INTO uporabnik_knjige (uporabnik_id, knjiga_id, status) 
         VALUES (?, ?, ?)
         ON DUPLICATE KEY UPDATE status = ?";
 
